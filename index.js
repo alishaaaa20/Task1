@@ -7,12 +7,12 @@ const PORT = 5000;
 
 app.use(bodyParser.json());
 
-// Endpoint for evaluating user-provided formulas
+// endpoint for evaluating user-provided formulas
 app.post("/evaluate", (req, res) => {
   const { formula, data } = req.body;
 
   try {
-    // Evaluate the user-provided formula using mathjs
+    // evaluating the user-provided formula using mathjs
     const result = evaluate(formula, data);
 
     res.json({ result });
@@ -21,15 +21,15 @@ app.post("/evaluate", (req, res) => {
   }
 });
 
-// Sample formula endpoint (e.g., Excel-like formula)
+// sample formula endpoint
 app.post("/sample-formula", (req, res) => {
   const data = req.body;
 
-  // Sample formula: (a + b) * c
+  // creating a sample formula: (a + b) * c
   const sampleFormula = "(data.a + data.b) * data.c";
 
   try {
-    // Evaluate the sample formula using mathjs
+    // evaluating sample formula using mathjs
     const result = evaluate(sampleFormula, data);
 
     res.json({ result });
