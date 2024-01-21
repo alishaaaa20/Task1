@@ -1,25 +1,70 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const { evaluate } = require("mathjs");
+const math = require("mathjs");
 
 const app = express();
 const PORT = 5000;
 
 app.use(bodyParser.json());
 
-// endpoint for evaluating user-provided formulas
-app.post("/evaluate", (req, res) => {
-  const { formula, data } = req.body;
+// storing formula in memory
+const userFormulas = {};
+
+// creating formula
+app.post("/createFormula", (req, res) => {
+  const { formulaName, expression } = req.body;
+
+  if (!formulaName || !expression) {
+    return res
+      .status(400)
+      .json({ error: "Both formulaName and expression are required." });
+  }
+
+  userFormulas[formulaName] = expression;
+  res.json({ message: `Formula '${formulaName}' created successfully.` });
+});
+
+// evaluate a formula
+app.post("/evaluateFormula", (req, res) => {
+  const { formulaName, data } = req.body;
+
+  if (!formulaName || !data) {
+    return res
+      .status(400)
+      .json({ error: "Both formulaName and data are required." });
+  }
+
+  const formula = userFormulas[formulaName];
+
+  if (!formula) {
+    return res
+      .status(404)
+      .json({ error: `Formula '${formulaName}' not found.` });
+  }
 
   try {
-    // evaluating the user-provided formula using mathjs
-    const result = evaluate(formula, data);
-
+    const result = evaluateFormula(formula, data);
     res.json({ result });
   } catch (error) {
-    res.status(400).json({ error: "Invalid formula or data provided." });
+    res.status(500).json({ error: "Error evaluating formula." });
   }
 });
+
+// Function to evaluate a formula expression
+function evaluateFormula(expression, data) {
+  try {
+    const evaluatedExpression = Object.keys(data).reduce((expr, variable) => {
+      const regex = new RegExp(variable, "g");
+      return expr.replace(regex, data[variable]);
+    }, expression);
+
+    // using mathjs to evaluate the expression
+    const result = math.evaluate(evaluatedExpression);
+    return result;
+  } catch (error) {
+    throw error;
+  }
+}
 
 // sample formula endpoint
 app.post("/sample-formula", (req, res) => {
